@@ -1,5 +1,7 @@
 # Сервис сокращения ссылок (Link Shortener API)
 
+![Coverage](https://img.shields.io/badge/coverage-91%25-brightgreen) [📊 Отчёт покрытия](reports/coverage_report.html)
+
 FastAPI-сервис для создания, управления и аналитики коротких ссылок с кэшированием через Redis.
 
 ## Описание API
@@ -117,3 +119,58 @@ docker-compose up --build
 - **Поиск** (`search:{url}`): TTL 2 минуты
 
 При обновлении и удалении ссылки соответствующие записи кэша инвалидируются.
+
+---
+
+## Тестирование (ДЗ 4)
+
+### Запуск тестов
+
+```bash
+pip install -r requirements.txt
+python -m pytest tests/ -v
+```
+
+### Покрытие кода
+
+**Текущее покрытие: ≥90%**
+
+```bash
+coverage run -m pytest tests
+coverage report -m
+```
+
+Или через pytest-cov:
+
+```bash
+python -m pytest tests/ --cov=app --cov-report=term-missing --cov-report=html
+```
+
+HTML-отчёт будет в `htmlcov/index.html`. Откройте в браузере для визуализации покрытия.
+
+**Единый HTML для GitHub:**
+```bash
+coverage run -m pytest tests
+coverage html
+python scripts/coverage_to_single_html.py
+```
+Результат: `reports/coverage_report.html` — один файл со встроенными стилями и скриптами, можно загрузить в репозиторий.
+
+### Типы тестов
+
+| Тип | Расположение | Описание |
+|-----|--------------|----------|
+| **Юнит** | `tests/unit/` | Генерация short_code, валидация, логика LinkService |
+| **Функциональные** | `tests/test_api.py` | CRUD, редирект, авторизация, невалидные данные |
+| **Нагрузочные** | `locustfile.py` | Locust: массовое создание ссылок, редиректы, влияние кэша |
+
+### Нагрузочное тестирование (Locust)
+
+1. Запустите сервер: `uvicorn app.main:app`
+2. В другом терминале: `locust -f locustfile.py --host=http://localhost:8000`
+3. Откройте http://localhost:8089 и задайте число пользователей/время
+4. Или headless: `locust -f locustfile.py --host=http://localhost:8000 --headless -u 20 -r 5 -t 60s`
+
+Все отчёты хранятся в reports/
+
+Отчёт по покрытию также хранится в /htmlconv
